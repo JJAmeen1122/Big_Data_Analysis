@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Insightlyzer{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Machine Learning Web Application</h1>
+    
+    <!-- File Upload Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-upload me-2"></i>Upload Dataset</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="file" class="form-label">Choose CSV or Excel file</label>
+                    <input class="form-control" type="file" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Upload
+                </button>
+            </form>
+            
+            {% if error %}
+                <div class="alert alert-danger mt-3">{{ error }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Dataset Information -->
+    {% if description %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-info-circle me-2"></i>Dataset Information</h2>
+        </div>
+        <div class="card-body">
+            <h5><i class="fas fa-file me-2"></i>File: {{ filename }}</h5>
+            <h5 class="mt-4"><i class="fas fa-chart-bar me-2"></i>Basic Statistics</h5>
+            <div class="table-responsive">
+                {{ description|safe }}
+            </div>
+            
+            <h5 class="mt-4"><i class="fas fa-database me-2"></i>Data Types</h5>
+            <div class="table-responsive">
+                {{ dtypes|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-robot me-2"></i>Machine Learning Analysis</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('analyze') }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="target" class="form-label">Target Column</label>
+                        <select class="form-select" id="target" name="target" required>
+                            {% for column in columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="features" class="form-label">Feature Columns</label>
+                        <select class="form-select" id="features" name="features" multiple required>
+                            {% for column in columns %}
+                                <option value="{{ column }}" selected>{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Hold Ctrl to select multiple</small>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="sample_size" class="form-label">Sample Size (for large datasets)</label>
+                        <input type="number" class="form-control" id="sample_size" name="sample_size" min="1000" max="1000000" value="10000">
+                        <small class="text-muted">For datasets > 50,000 rows</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="algorithm" class="form-label">Algorithm</label>
+                        <select class="form-select" id="algorithm" name="algorithm" required>
+                            <option value="knn">K-Nearest Neighbors (KNN)</option>
+                            <option value="kmeans">K-Means Clustering</option>
+                            <option value="naive_bayes">Naive Bayes</option>
+                            <option value="logistic_regression">Logistic Regression</option>
+                            <option value="decision_tree">Decision Tree</option>
+                            <option value="svm">Support Vector Machine (SVM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="test_size" class="form-label">Test Size</label>
+                        <input type="number" class="form-control" id="test_size" name="test_size" min="0.1" max="0.5" step="0.05" value="0.2" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="chart_type" class="form-label">Chart Type</label>
+                        <select class="form-select" id="chart_type" name="chart_type" required>
+                            <option value="bar">Bar Chart</option>
+                            <option value="pie">Pie Chart</option>
+                            <option value="histogram">Histogram</option>
+                            <option value="scatter">Scatter Plot</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary me-md-2">
+                        <i class="fas fa-chart-line me-2"></i>Analyze
+                    </button>
+                </div>
+
+                {% if description %}
+                <div class="text-center mb-4">
+                    <a href="{{ url_for('top_videos') }}" class="btn btn-success me-2">
+                        <i class="fas fa-thumbs-up me-2"></i>Top Liked Videos
+                    </a>
+                    <a href="{{ url_for('top_disliked_videos') }}" class="btn btn-danger">
+                        <i class="fas fa-thumbs-down me-2"></i>Top Disliked Videos
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if note %}
+        {{ note|safe }}
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script>
+    // Add animation to cards when they come into view
+    const cards = document.querySelectorAll('.card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = 1;
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    cards.forEach(card => {
+        card.style.opacity = 0;
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+</script>
+{% endblock %}
+{% endblock %}

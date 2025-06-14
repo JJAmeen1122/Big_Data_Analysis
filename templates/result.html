@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Analysis Results</h1>
+    
+    {% if results.note %}
+        {{ results.note|safe }}
+    {% endif %}
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-pie me-2"></i>Summary</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-project-diagram me-2"></i>Algorithm:</strong> {{ results.algorithm }}</p>
+                    <p><strong><i class="fas fa-bullseye me-2"></i>Target Variable:</strong> {{ results.target }}</p>
+                    <p><strong><i class="fas fa-list-ul me-2"></i>Features:</strong> {{ results.features|join(', ') }}</p>
+                </div>
+                <div class="col-md-6">
+                    {% if results.accuracy is not none %}
+                    <p><strong><i class="fas fa-percentage me-2"></i>Accuracy:</strong> 
+                        <span class="badge bg-{% if results.accuracy > 0.8 %}success{% elif results.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                            {{ "%.2f"|format(results.accuracy * 100) }}%
+                        </span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if results.classification_report %}
+            <h5 class="mt-4"><i class="fas fa-file-alt me-2"></i>Classification Report</h5>
+            <pre>{{ results.classification_report }}</pre>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-bar me-2"></i>Visualizations</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for title, img in results.charts %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4>{{ title }}</h4>
+                            <img src="data:image/png;base64,{{ img }}" class="img-fluid" alt="{{ title }}">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mb-4">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
